@@ -3,8 +3,8 @@ import React, { createContext, useState, useRef, useEffect } from 'react';
 import {io} from 'socket.io-client';
 import Peer from 'simple-peer';
 const context=createContext();
+const socket = io('https://ms-teams-vd.herokuapp.com/');
 
-const socket = io('http://localhost:5000');
 
 const MegaParent=function({children}){
    
@@ -12,25 +12,25 @@ const MegaParent=function({children}){
     const[stream,setStream]=useState(null);
     const[me,setMe]=useState('');
     const[call,setCall]=useState({});
+    const[SecondaryName,setSecondaryName]=useState('');
     const[accepted,setaccepted]=useState(false);
     const[ended,setend]=useState(false);
     const[name,setname]=useState('');
-    const[msglist,setmsglist]=useState([{}]);
+    const[msglist,setmsglist]=useState([{SenderName:'YOU ARE----',msg:'-----CONNECTED'}]);
     const[idToSend,setidToSend]=useState('');
     const[sms,setsms]=useState('');
-    //const[msgno,setmsgno]=useState(0);
-    const[megabool,setmegabool]=useState(true);
-    const[msgno,setmsgno]=useState(0);
     const myvid=useRef();
     const uservid=useRef();
     const peerref=useRef();
 
 
+    // this function is only called when the connection is first established and it latches on as listeners to several events to listen for
+    // chat msg or video call request and to get the client's socket id
     useEffect(function(){
         // user permission stuff
-        navigator.mediaDevices.getUserMedia({video: true ,audio: true}).then(function(currentStream){
-            setStream(currentStream);
-            myvid.current.srcObject=currentStream;
+        navigator.mediaDevices.getUserMedia({video: true ,audio: true}).then(function(InputStream){
+            setStream(InputStream);
+            myvid.current.srcObject=InputStream;
         });
         socket.on('me',function(id){
             setMe(id);
@@ -39,21 +39,14 @@ const MegaParent=function({children}){
         socket.on('Calling', function({ from, name: caller_name, signal }){
             
             setCall({ Receivecall: true, from, name: caller_name, signal });
+            setSecondaryName(caller_name);
 
         });
 
         
         socket.on('Chat',function({SenderName,msg}){
-            var x = msglist;
-            
-            //var x = [...MegaArray,{SenderName:SenderName,msg:msg,Unique:msgno}];
-            x.push({SenderName:SenderName,msg:msg,Unique:msgno});
-            //setmsglist(msglist=>[...x]);
-            setmsglist([...x]);
-            //setmegabool(!megabool);
-            //setmsglist([...msglist,{SenderName,msg,Unique:msgno}]);
-            //console.log(msglist);
-                
+           
+            setmsglist( arr => [...arr,{SenderName:SenderName,msg:msg}]);       
         });
         
     },
@@ -68,7 +61,7 @@ const MegaParent=function({children}){
         const peer=new Peer({initiator:false,trickle:false,stream});
         
         peer.on('signal',function(data){
-            socket.emit('CallAnswer',{signal:data,to:call.from});
+            socket.emit('CallAnswer',{signal:data,to:call.from,AccepterName:name});
         });
 
         peer.on('stream',function(inputstream){
@@ -91,19 +84,22 @@ const MegaParent=function({children}){
         const peer=new Peer({initiator:true,trickle:false,stream});        
         
         peer.on('signal',function(data){
+            // emitting my data to the calling event of server
             socket.emit('Calling',{ToCall:id,signalstuff:data,from:me,name});
         })
 
-        peer.on('stream',function(currentStream)
+        peer.on('stream',function(InputStream)
         {
             // the stream of the other user not myvid / mystream
-            uservid.current.srcObject=currentStream;
+            uservid.current.srcObject=InputStream;
         }
         );
 
-        socket.on('Accepted',function(signal){
+        socket.on('Accepted',function({signal,AccepterName}){
+            
             setaccepted(true);
-
+            // Setting the name of the 2nd client on the screen
+            setSecondaryName(AccepterName);
             peer.signal(signal);
         })
         peerref.current=peer;
@@ -112,15 +108,10 @@ const MegaParent=function({children}){
 
     const SendMsg=function(){
 
-        //setmsglist([...msglist,{SenderName:name,msg:sms}]);
+        // updating the msg list to display in chatbox
+        setmsglist( arr => [...arr,{SenderName:"You",msg:sms}]);      
         
-       // x = {...x, {SenderName:name,msg:sms,Unique:msgno}};
-        //var x = [...msglist,{SenderName:name,msg:sms,Unique:msgno}];
-        var x= msglist;
-        x.push({SenderName:name,msg:sms,Unique:msgno});
-        setmsglist(x);
-        //setmegabool(!megabool);
-        //setmsglist([...msglist,{SenderName:name,msg:sms,Unique:msgno}]);
+        // emitting the msg to server that the client wants to send to another client
         socket.emit("Chat",{idToSend:idToSend,SenderName:name,msg:sms});
         setsms('');
     }
@@ -131,42 +122,16 @@ const MegaParent=function({children}){
         // stop receiving input from users cam and audio device 
         peerref.current.destroy();
 
-        //reloading the page and then would provide a new ID
-        window.location.reload();
     }
 
-    
 
     return (
         <context.Provider value={{
-          call,
-          accepted,
-          myvid, 
-          uservid, 
-          stream,
-          name,
-          setname,
-          ended,
-          me, 
-          Call,
-          End, 
-          Answer,
-          SendMsg,
-          setsms,
-          sms,
-          idToSend,
-          setidToSend,
-          msglist,
-          megabool
-
-        }}
-        >
+          call,accepted,myvid,uservid,stream,name,setname,ended,me,Call,End,Answer,SendMsg,setsms,sms,idToSend,setidToSend,msglist,SecondaryName
+        }}>
           {children}
         </context.Provider>
       );
     
 };
-
 export{MegaParent,context};
-
-// export{ContextProvider,SocketContext};

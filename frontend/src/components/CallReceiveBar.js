@@ -3,7 +3,7 @@ import { Button } from '@material-ui/core';
 
 import { context } from '../sockets';
 
-const CallReceiveBar = () => {
+function CallReceiveBar(){
   const { Answer, call, accepted } = useContext(context);
 
   return (

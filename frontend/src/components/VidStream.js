@@ -1,54 +1,51 @@
 import React, { useContext } from 'react';
-import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
+import { Grid, Typography, Paper } from '@material-ui/core';
 
 import { context } from '../sockets';
 
 
+function VidStream(){
+  const { name, accepted, myvid, uservid, ended, stream,SecondaryName } = useContext(context);
 
-const useStyles = makeStyles((theme) => ({
-  video: {
-    width: '550px',
-    [theme.breakpoints.down('xs')]: {
-      width: '300px',
-    },
-  },
-  gridContainer: {
-    justifyContent: 'center',
-    [theme.breakpoints.down('xs')]: {
-      flexDirection: 'column',
-    },
-  },
-  paper: {
-    padding: '10px',
-    border: '2px solid black',
-    margin: '10px',
-  },
-}));
-
-const VidStream = () => {
-  const { name, accepted, myvid, uservid, ended, stream, call } = useContext(context);
-  const classes = useStyles();
 
   return (
-    <Grid container className={classes.gridContainer}>
+    <Grid container style={GridStyle}>
       {stream && (
-        <Paper className={classes.paper}>
+        <Paper style={PaperStyle}>
           <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>{name || 'Name'}</Typography>
-            <video playsInline muted ref={myvid} autoPlay className={classes.video} />
+            <video playsInline muted ref={myvid} autoPlay style={VidStyle} />
           </Grid>
         </Paper>
       )}
       {accepted && !ended && (
-        <Paper className={classes.paper}>
+        <Paper style={PaperStyle}>
           <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>{call.name || 'Name'}</Typography>
-            <video playsInline ref={uservid} autoPlay className={classes.video} />
+            <Typography variant="h5" gutterBottom>{SecondaryName || 'Name'}</Typography>
+            <video playsInline ref={uservid} autoPlay style={VidStyle} />
           </Grid>
         </Paper>
       )}
     </Grid>
   );
 };
+
+
+const VidStyle={
+  width: '530px',
+  
+}
+
+const GridStyle={
+  justifyContent: 'center',
+}
+
+const PaperStyle={
+  padding: '10px',
+  border: '2px solid black',
+  margin: '10px',
+}
+
+
 
 export default VidStream;

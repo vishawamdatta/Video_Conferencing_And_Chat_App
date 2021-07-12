@@ -1,6 +1,6 @@
 import { context } from '../sockets';
 import React, { useContext } from 'react';
-import { Button, TextField, Grid, Typography, Container, Paper } from '@material-ui/core';
+import { Button, TextField, Typography  } from '@material-ui/core';
 
 
 function MsgBar() {
@@ -9,26 +9,27 @@ function MsgBar() {
     
 
     return (
-        
+
             <form className='msg-form' style={FormStyle}>
-                <div className='id-toConnect'>
-                    <label>Enter the ID</label>
-                    <TextField label="ID to connect" value={idToSend} onChange={function(e){
+                <div className='id-toConnect' style={style1}>
+                    <Typography gutterBottom variant="h6">Enter the ID</Typography>
+                    <TextField label="ID to connect"  value={idToSend} onChange={function(e){
                         setidToSend(e.target.value)
                     }} fullWidth />
                 </div>
                 
-                <div className='msg-text'>
-                    <label>Enter message</label>
-                    <TextField label="Message" value={sms} onChange={function(e){
+                <div className='msg-text' syle={style1}>
+                    <Typography gutterBottom variant="h6">Enter message</Typography>
+                    <TextField label="Message"  value={sms} onChange={function(e){
                         setsms(e.target.value)
                     }} fullWidth />
                 </div>
 
-                <Button variant="contained" color="primary" fullWidth onClick={SendMsg} >
+                <Button variant="contained" color="primary" fullWidth onClick={SendMsg} style={style2}>
                         Send
                 </Button>
             </form>
+          
     )
 }
 
@@ -37,8 +38,16 @@ const FormStyle={
 
     padding: '10px 20px',
     border: '2px solid black',
-    width: '35%',
-
+    width: '20vw',
+    display: 'inline-block',
+    margin: '10px',
+}
+const style1={
+    marginTop: 15,
+    marginBottom: 25,
+}
+const style2={
+    marginTop:25,
 }
 
 export default MsgBar

@@ -32,16 +32,18 @@ io.on('connection',function(socket){
 
     socket.on("Calling",function({ToCall,signalstuff,from,name}){
 
+        // emitting the details to the corresponding client (basically telling that someone is calling)
         io.to(ToCall).emit("Calling",{signal:signalstuff,from,name});
 
     });
 
-    socket.on("CallAnswer",function(data){
-        io.to(data.to).emit("Accepted",data.signal);
+    socket.on("CallAnswer",function({signal,to,AccepterName}){
+        // telling the the 1st client that 2nd client has accepted the call and providing the 1st client with details
+        io.to(to).emit("Accepted",{signal,AccepterName});
     });
 
     socket.on('Chat',function({idToSend,SenderName,msg}){
-
+        // sending private chat msg to specific socket id 
         io.to(idToSend).emit("Chat",{SenderName,msg});
     })
 
