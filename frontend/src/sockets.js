@@ -4,7 +4,7 @@ import {io} from 'socket.io-client';
 import Peer from 'simple-peer';
 const context=createContext();
 const socket = io('https://ms-teams-vd.herokuapp.com/');
-
+//const socket = io('http://localhost:5000/')
 
 const MegaParent=function({children}){
    
@@ -16,7 +16,7 @@ const MegaParent=function({children}){
     const[accepted,setaccepted]=useState(false);
     const[ended,setend]=useState(false);
     const[name,setname]=useState('');
-    const[msglist,setmsglist]=useState([{SenderName:'YOU ARE----',msg:'-----CONNECTED'}]);
+    const[msglist,setmsglist]=useState([{SenderName:'YOU ARE----',msg:'----CONNECTED'}]);
     const[idToSend,setidToSend]=useState('');
     const[sms,setsms]=useState('');
     const myvid=useRef();
@@ -32,10 +32,13 @@ const MegaParent=function({children}){
             setStream(InputStream);
             myvid.current.srcObject=InputStream;
         });
+
+        //event for getting id from socket-io 
         socket.on('me',function(id){
             setMe(id);
         });
         
+        // calling event which listens whether someone is calling or not 
         socket.on('Calling', function({ from, name: caller_name, signal }){
             
             setCall({ Receivecall: true, from, name: caller_name, signal });
@@ -43,7 +46,7 @@ const MegaParent=function({children}){
 
         });
 
-        
+        // chat event which listens for private msgs.        
         socket.on('Chat',function({SenderName,msg}){
            
             setmsglist( arr => [...arr,{SenderName:SenderName,msg:msg}]);       
@@ -108,12 +111,17 @@ const MegaParent=function({children}){
 
     const SendMsg=function(){
 
-        // updating the msg list to display in chatbox
-        setmsglist( arr => [...arr,{SenderName:"You",msg:sms}]);      
+        if(sms!=='')
+        {
+            // updating the msg list to display in chatbox
+            setmsglist( arr => [...arr,{SenderName:"You",msg:sms}]);      
+            
+            // emitting the msg to server that the client wants to send to another client
+            socket.emit("Chat",{idToSend:idToSend,SenderName:name,msg:sms});
+            setsms('');
+
+        }
         
-        // emitting the msg to server that the client wants to send to another client
-        socket.emit("Chat",{idToSend:idToSend,SenderName:name,msg:sms});
-        setsms('');
     }
 
     const End=function(){
