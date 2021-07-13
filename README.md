@@ -1,6 +1,6 @@
 # Video_Conferencing_And_Chat_App (VidChat)
 
-The frontend of the application has been deployed via netlify - https://nifty-goldwasser-770e38.netlify.app/
+The frontend of the application has been deployed via netlify(To test the website go to this link) - https://nifty-goldwasser-770e38.netlify.app/
 
 And the backend server is hosted via heroku - https://ms-teams-vd.herokuapp.com/
 
